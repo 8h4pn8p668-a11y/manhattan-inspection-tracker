@@ -108,3 +108,131 @@ body {
 .hidden {
     display: none;
 }
+app.js
+// Manhattan Inspection Tracker
+// Version 1 foundation
+
+let selectedBlock = null;
+
+let blocks = {};
+
+
+// Load saved progress
+if (localStorage.getItem("inspectionBlocks")) {
+    blocks = JSON.parse(localStorage.getItem("inspectionBlocks"));
+}
+
+
+// Create map
+const map = L.map("map").setView(
+    [40.7831, -73.9712],
+    13
+);
+
+
+// Map background
+L.tileLayer(
+    "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+    {
+        maxZoom: 19,
+        attribution: "OpenStreetMap"
+    }
+).addTo(map);
+
+
+// Temporary test block
+// (Real Manhattan block data comes next)
+
+let testBlock = L.rectangle(
+    [
+        [40.782, -73.975],
+        [40.783, -73.973]
+    ],
+    {
+        color: "gray",
+        weight: 1,
+        fillOpacity: .5
+    }
+).addTo(map);
+
+
+testBlock.blockID = "test1";
+
+
+testBlock.on("click", function(){
+
+    selectedBlock = this;
+
+    document
+        .getElementById("menu")
+        .classList
+        .remove("hidden");
+
+});
+
+
+
+// Change status
+
+function setStatus(color){
+
+    if(!selectedBlock) return;
+
+
+    selectedBlock.setStyle({
+        fillColor: color,
+        fillOpacity: .7
+    });
+
+
+    blocks[selectedBlock.blockID] = color;
+
+
+    localStorage.setItem(
+        "inspectionBlocks",
+        JSON.stringify(blocks)
+    );
+
+
+    document
+        .getElementById("menu")
+        .classList
+        .add("hidden");
+
+
+    updateStats();
+
+}
+
+
+
+// Update numbers
+
+function updateStats(){
+
+    let green = 0;
+    let yellow = 0;
+    let red = 0;
+
+
+    Object.values(blocks).forEach(function(status){
+
+        if(status === "green") green++;
+
+        if(status === "yellow") yellow++;
+
+        if(status === "red") red++;
+
+    });
+
+
+    document.getElementById("completeCount").innerHTML = green;
+
+    document.getElementById("yellowCount").innerHTML = yellow;
+
+    document.getElementById("remainingCount").innerHTML = red;
+
+}
+
+
+updateStats();
